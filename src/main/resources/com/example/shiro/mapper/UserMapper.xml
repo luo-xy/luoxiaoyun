@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.shiro.mapper.UserMapper">
+
+    <select id="findUserByName" resultType="com.example.shiro.entity.User">
+        select user_name as userName,user_password as password from t_user where user_name = #{value}
+    </select>
+    <select id="gerAuthoritiesByUserName" resultMap="com.example.shiro.mapper.CommonMapper.author">
+        SELECT a.* FROM t_autho a INNER JOIN t_role_autho ra ON a.autho_id = ra.autho_id INNER JOIN t_role r ON ra.role_id = r.role_id
+        INNER JOIN t_user_role ur ON r.role_id = ur.role_id INNER JOIN t_user u ON u.user_name=ur.user_id WHERE u.user_name = #{value}
+    </select>
+    <insert id="addUser" parameterType="com.example.shiro.entity.User">
+        insert into t_user values(#{userName,jdbcType=VARCHAR},#{password,jdbcType=VARCHAR})
+    </insert>
+    <insert id="addUserRole">
+        insert into t_user_role values
+        <foreach collection="roles" item="role" separator=",">
+            (#{role},#{userName})
+        </foreach>
+    </insert>
+    <select id="findAllUser" resultType="com.example.shiro.entity.User">
+        select user_name userName,user_password password from t_user;
+    </select>
+    <delete id="delUser" parameterType="string">
+        delete from t_user where user_name=#{userName}
+    </delete>
+    <select id="findRoleByName" parameterType="string" resultType="com.example.shiro.entity.Role">
+            SELECT
+            r.role_id id,
+            r.role_name roleName
+            FROM
+                t_role r
+                LEFT JOIN t_user_role ur ON r.role_id=ur.role_id
+            WHERE ur.user_id=#{userName}
+    </select>
+    <update id="updateUser" parameterType="com.example.shiro.entity.User">
+        update t_user set user_password=#{password} where user_name=#{userName}
+    </update>
+</mapper>
